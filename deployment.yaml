@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teamdc-project
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: teamdc-project
+  template:
+    metadata:
+      labels:
+        name: teamdc-project
+    spec:
+      containers:
+        - name: app
+          image: kal1bur/project3
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: teamdc-project
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    name: teamdc-project
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: teamdc-project
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    kubernetes.io/ingress.class: alb
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: teamdc-project
+            port:
+              number: 80

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-endpoint
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: jenkins-endpoint
+  template:
+    metadata:
+      labels:
+        name: jenkins-endpoint
+    spec:
+      containers:
+        - name: app
+          image: jenkins/jenkins
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-endpoint
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    name: jenkins-endpoint
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jenkins-endpoint
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    kubernetes.io/ingress.class: alb
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jenkins-endpoint
+            port:
+              number: 80
